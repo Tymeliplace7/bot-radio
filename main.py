@@ -5,27 +5,7 @@ import discord
 from discord.ext import commands, tasks
 from flask import Flask
 
-# --- 1. SERVIDOR FLASK (KEEP ALIVE) ---
-app = Flask('')
-
-
-@app.route('/')
-def home():
-  return 'Bot Radio Online 24/7'
-
-
-def run_flask():
-  port = int(os.environ.get('PORT', 8080))
-  app.run(host='0.0.0.0', port=port)
-
-
-def keep_alive():
-  t = threading.Thread(target=run_flask)
-  t.daemon = True
-  t.start()
-
-
-# --- 2. CONFIGURACIÓN DEL BOT DE DISCORD ---
+# --- 1. CONFIGURACIÓN DEL BOT DE DISCORD ---
 ESTACION_DEFAULT = 'exa'
 
 RADIOS = {
@@ -166,16 +146,30 @@ async def listar_radios(ctx):
   )
 
 
-# --- 3. INICIALIZACIÓN PRINCIPAL ---
-async def main():
-  keep_alive()  # Levanta Flask en un hilo secundario independiente
+# --- 2. EJECUCIÓN DEL BOT EN HILO SECUNDARIO ---
+def iniciar_bot():
+  loop = asyncio.new_event_loop()
+  asyncio.set_event_loop(loop)
   token = os.environ.get('DISCORD_TOKEN')
   if token:
     print('Conectando a Discord...')
-    await bot.start(token)
+    loop.run_until_complete(bot.start(token))
   else:
     print('❌ ERROR: Variable DISCORD_TOKEN no encontrada.')
 
 
+# Arranca el bot en segundo plano
+threading.Thread(target=iniciar_bot, daemon=True).start()
+
+# --- 3. SERVIDOR FLASK (HILO PRINCIPAL PARA RENDER) ---
+app = Flask('')
+
+
+@app.route('/')
+def home():
+  return 'Bot Radio Online 24/7'
+
+
 if __name__ == '__main__':
-  asyncio.run(main())
+  port = int(os.environ.get('PORT', 8080))
+  app.run(host='0.0.0.0', port=port)
