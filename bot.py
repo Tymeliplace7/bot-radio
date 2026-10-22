@@ -168,3 +168,15 @@ async def listar_radios(ctx):
 
 # Carga el token desde la variable de entorno configurada en Render
 bot.run(os.environ.get('DISCORD_TOKEN'))
+
+# Reemplaza la última línea bot.run(...) por este bloque:
+token = os.environ.get('DISCORD_TOKEN')
+
+if not token:
+  print('❌ ERROR CRÍTICO: La variable DISCORD_TOKEN está vacía en Render.')
+else:
+  try:
+    print('Intentando conectar con Discord...')
+    bot.run(token)
+  except Exception as e:
+    print(f'❌ ERROR AL INICIAR EL BOT: {e}')
