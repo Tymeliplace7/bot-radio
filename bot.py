@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands, tasks
 from flask import Flask
 
+# 1. Servidor Flask para Keep-Alive / Health Checks de Render
 app = Flask('')
 
 
@@ -13,19 +14,20 @@ def home():
   return 'Bot Radio Online'
 
 
-def run():
+def run_flask():
   port = int(os.environ.get('PORT', 8080))
   app.run(host='0.0.0.0', port=port)
 
 
 def keep_alive():
-  t = threading.Thread(target=run)
+  t = threading.Thread(target=run_flask, daemon=True)
   t.start()
 
 
+# Inicia el servidor Flask en segundo plano
 keep_alive()
 
-
+# 2. Configuración del Bot de Radio
 ESTACION_DEFAULT = 'exa'
 
 RADIOS = {
@@ -79,7 +81,7 @@ async def reproducir_stream(cliente_voz, estacion_nombre):
 
 @bot.event
 async def on_ready():
-  print(f'Bot listo y operando 24/7 como: {bot.user.name}')
+  print(f'✅ Bot listo y operando 24/7 como: {bot.user.name}')
   if not guardian_247.is_running():
     guardian_247.start()
 
@@ -166,17 +168,14 @@ async def listar_radios(ctx):
   )
 
 
-# Carga el token desde la variable de entorno configurada en Render
-bot.run(os.environ.get('DISCORD_TOKEN'))
-
-# Reemplaza la última línea bot.run(...) por este bloque:
+# 3. Arranque de Discord con manejo de errores explicito
 token = os.environ.get('DISCORD_TOKEN')
 
 if not token:
-  print('❌ ERROR CRÍTICO: La variable DISCORD_TOKEN está vacía en Render.')
+  print('❌ ERROR CRÍTICO: La variable DISCORD_TOKEN no está configurada.')
 else:
   try:
     print('Intentando conectar con Discord...')
     bot.run(token)
   except Exception as e:
-    print(f'❌ ERROR AL INICIAR EL BOT: {e}')
+    print(f'❌ ERROR AL INICIAR EL BOT EN DISCORD: {e}')
