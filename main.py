@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands, tasks
 from flask import Flask
 
-# --- 1. SERVIDOR FLASK PARA RENDER ---
+# --- SERVIDOR FLASK ---
 app = Flask('')
 
 
@@ -15,12 +15,11 @@ def home():
 
 
 def run_flask():
-  port = int(os.environ.get('PORT', 8080))
-  # Flask corre en su propio hilo sin reloader para no interferir con asyncio
+  port = int(os.environ.get('PORT', 10000))
   app.run(host='0.0.0.0', port=port, use_reloader=False)
 
 
-# --- 2. CONFIGURACIÓN DEL BOT DE DISCORD ---
+# --- CONFIGURACIÓN DEL BOT DE DISCORD ---
 ESTACION_DEFAULT = 'exa'
 
 RADIOS = {
@@ -161,11 +160,12 @@ async def listar_radios(ctx):
   )
 
 
-# --- 3. INICIO SIMULTÁNEO ---
+# --- EJECUCIÓN SIMULTÁNEA ---
 if __name__ == '__main__':
-  # Levanta el servidor web de Flask en un hilo daemon para responder el health check de Render
+  # 1. Arrancar Flask primero en un hilo daemon
   threading.Thread(target=run_flask, daemon=True).start()
 
+  # 2. Iniciar Bot de Discord
   token = os.environ.get('DISCORD_TOKEN')
   if token:
     print('Conectando a Discord...')
