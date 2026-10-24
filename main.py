@@ -21,7 +21,7 @@ def run_flask():
   app.run(host='0.0.0.0', port=port, use_reloader=False)
 
 
-# --- 2. CONFIGURACIÓN DEL BOT DE DISCORD ---
+# --- 2. CONFIGURACIÓN DEL BOT DE DISCORD E INTENTS ---
 ESTACION_DEFAULT = 'exa'
 
 RADIOS = {
@@ -37,8 +37,11 @@ RADIOS = {
     'smooth_jazz': 'https://ice1.somafm.com/secretagent-128-mp3',
 }
 
+# Habilitación explícita de intenciones de mensaje
 intents = discord.Intents.default()
+intents.messages = True
 intents.message_content = True
+intents.guilds = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
@@ -185,10 +188,3 @@ if __name__ == '__main__':
               '⚠️ Bloqueo temporal por Rate Limit (429/Cloudflare). Esperando'
               ' 60s antes de reintentar...'
           )
-          time.sleep(60)
-        else:
-          print(f'❌ Error de conexión HTTP con Discord: {e}')
-          break
-      except Exception as e:
-        print(f'❌ Error inesperado: {e}')
-        break
